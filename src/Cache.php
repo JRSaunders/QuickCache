@@ -2,7 +2,7 @@
 namespace QuickCache;
 /**
  * Class Cache
- * @package ExchangeRates
+ * @package QuickCache
  */
 class Cache
 {
@@ -11,9 +11,9 @@ class Cache
      */
     protected static $cachedDataArray = array();
     /**
-     * @var bool|string
+     * @var array
      */
-    protected static $cachePath = false;
+    protected static $cachePathArray = array();
     /**
      * @var null|string
      */
@@ -28,8 +28,9 @@ class Cache
      */
     public function getCachePath()
     {
-        if (static::$cachePath) {
-            return rtrim(static::$cachePath, '/') . '/';
+        $class = get_class($this);
+        if (isset(self::$cachePathArray[$class])) {
+            return rtrim(self::$cachePathArray[$class], '/') . '/';
         }
         return false;
     }
@@ -39,7 +40,8 @@ class Cache
      */
     public function setCachePath($cachePath)
     {
-        static::$cachePath = $cachePath;
+        $class = get_class($this);
+        self::$cachePathArray[$class] = $cachePath;
     }
 
     /**
@@ -96,7 +98,7 @@ class Cache
         $filename = $this->normalizeString($filename);
         $filename = str_replace('.XchgeCache', '', $filename);
 
-        return $filename . '.XchgeCache';
+        return $filename . '.QuickCache';
     }
 
     /**
