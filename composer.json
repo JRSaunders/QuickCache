@@ -1,0 +1,20 @@
+{
+  "name": "jrsaunders/quickcache",
+  "description": "Quick Caching",
+  "minimum-stability": "dev",
+  "license": "proprietary",
+  "authors": [
+    {
+      "name": "John Saunders",
+      "email": "john@yettimedia.co.uk"
+    }
+  ],
+  "require": {
+    "php": ">=5.3"
+  },
+  "autoload": {
+    "psr-4": {
+      "QuickCache\\": "src/"
+    }
+  }
+}
