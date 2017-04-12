@@ -19,6 +19,10 @@ class Cache
      */
     protected $rawData = null;
     /**
+     * @var null|string
+     */
+    protected $oldRawData = null;
+    /**
      * @var null|\stdClass
      */
     protected $data = null;
@@ -81,24 +85,58 @@ class Cache
             if ((time() - filemtime($filePath)) <= $ttlSeconds) {
                 $this->rawData = file_get_contents($filePath);
                 return static::$cachedDataArray[$filePath] = $this->data = json_decode($this->rawData);
-            } elseif ($removeOld) {
+            }
+            $this->oldRawData = file_get_contents($filePath);
+            $this->saveOldCache($filename);
+            if ($removeOld) {
                 unlink($filePath);
             }
         }
         return false;
     }
 
+    public function getOldCacheData($filename)
+    {
+        if ($this->getCachePath() && !empty($filename)) {
+            $filePath = $this->getCachePath() . $this->prepareFilename($filename, true);
+
+            if (isset(static::$cachedDataArray[$filePath])) {
+                return $this->data = static::$cachedDataArray[$filePath];
+            }
+
+            if (!file_exists($filePath)) {
+                return false;
+            }
+
+            $this->rawData = file_get_contents($filePath);
+            return static::$cachedDataArray[$filePath] = $this->data = json_decode($this->rawData);
+        }
+        return false;
+    }
+
+    protected function saveOldCache($filename)
+    {
+        if ($this->getOldRawData()!==null) {
+            $filePath = $this->getCachePath() . $this->prepareFilename($filename, true);
+            file_put_contents($filePath, $this->getOldRawData());
+        }
+    }
+
     /**
      * @param $filename
      * @return string
      */
-    protected function prepareFilename($filename)
+    protected function prepareFilename($filename, $old = false)
     {
-
+        $ext = '.QuickCache';
+        if ($old) {
+            $ext = '.OldQuickCache';
+        }
+        $searchArray = array('.QuickCache', '.OldQuickCache');
         $filename = $this->normalizeString($filename);
-        $filename = str_replace('.XchgeCache', '', $filename);
+        $filename = str_replace($searchArray, '', $filename);
 
-        return $filename . '.QuickCache';
+        return $filename . $ext;
     }
 
     /**
@@ -135,4 +173,14 @@ class Cache
     {
         return $this->data;
     }
+
+    /**
+     * @return null|string
+     */
+    public function getOldRawData()
+    {
+        return $this->oldRawData;
+    }
+
+
 }
