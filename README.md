@@ -1,6 +1,6 @@
 # QuickCache
 Quick Caching Library
-[![Latest Stable Version](https://poser.pugx.org/jrsaunders/quickcache/v/stable)](https://packagist.org/packages/jrsaunders/giraffe)
+[![Latest Stable Version](https://poser.pugx.org/jrsaunders/quickcache/v/stable)](https://packagist.org/packages/jrsaunders/quickcache)
 [![Total Downloads](https://poser.pugx.org/jrsaunders/quickcache/downloads)](https://packagist.org/packages/jrsaunders/quickcache)
 [![Latest Unstable Version](https://poser.pugx.org/jrsaunders/quickcache/v/unstable)](https://packagist.org/packages/jrsaunders/quickcache)
 [![License](https://poser.pugx.org/jrsaunders/quickcache/license)](https://packagist.org/packages/jrsaunders/quickcache)
