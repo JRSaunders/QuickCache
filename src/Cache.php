@@ -46,6 +46,13 @@ class Cache
     {
         $class = get_class($this);
         self::$cachePathArray[$class] = $cachePath;
+
+        if (!((file_exists($cachePath)) && is_writable($cachePath))) {
+            $madeDir = mkdir($cachePath);
+            if (!$madeDir) {
+                throw new \Exception('Unable to create ' . $cachePath . ' Quick Cache Path!');
+            }
+        }
     }
 
     /**
@@ -116,7 +123,7 @@ class Cache
 
     protected function saveOldCache($filename)
     {
-        if ($this->getOldRawData()!==null) {
+        if ($this->getOldRawData() !== null) {
             $filePath = $this->getCachePath() . $this->prepareFilename($filename, true);
             file_put_contents($filePath, $this->getOldRawData());
         }
