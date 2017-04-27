@@ -67,6 +67,7 @@ class Cache
             $jsonData = json_encode($data);
             return file_put_contents($filePath, $jsonData);
         }
+
         return true;
     }
 
@@ -76,7 +77,7 @@ class Cache
      * @param bool $removeOld
      * @return bool|mixed
      */
-    public function getCacheData($filename, $ttlSeconds = 120000, $removeOld = true)
+    public function getCacheData($filename, $ttlSeconds = 120000, $removeOld = true, $saveOldCache = true)
     {
         if ($this->getCachePath() && !empty($filename)) {
             $filePath = $this->getCachePath() . $this->prepareFilename($filename);
@@ -94,7 +95,9 @@ class Cache
                 return static::$cachedDataArray[$filePath] = $this->data = json_decode($this->rawData);
             }
             $this->oldRawData = file_get_contents($filePath);
-            $this->saveOldCache($filename);
+            if ($saveOldCache) {
+                $this->saveOldCache($filename);
+            }
             if ($removeOld) {
                 unlink($filePath);
             }
