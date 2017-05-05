@@ -26,6 +26,14 @@ class Cache
      * @var null|\stdClass
      */
     protected $data = null;
+    /**
+     * @var null|int
+     */
+    protected $time = null;
+    /**
+     * @var null|int
+     */
+    protected $oldTime = null;
 
     /**
      * @return bool|string
@@ -89,8 +97,8 @@ class Cache
             if (!file_exists($filePath)) {
                 return false;
             }
-
-            if ((time() - filemtime($filePath)) <= $ttlSeconds) {
+            $this->setTime(filemtime($filePath));
+            if ((time() - $this->getTime()) <= $ttlSeconds) {
                 $this->rawData = file_get_contents($filePath);
                 return static::$cachedDataArray[$filePath] = $this->data = json_decode($this->rawData);
             }
@@ -105,6 +113,23 @@ class Cache
         return false;
     }
 
+    /**
+     * @param $filename
+     * @param bool $removeOld
+     * @return bool
+     */
+    public function destroyCache($filename, $removeOld = true)
+    {
+        if (!($this->getCachePath() && !empty($filename))) {
+            return false;
+        }
+
+        @unlink($this->getCachePath() . $this->prepareFilename($filename));
+        if ($removeOld) {
+            @unlink($this->getCachePath() . $this->prepareFilename($filename, true));
+        }
+    }
+
     public function getOldCacheData($filename)
     {
         if ($this->getCachePath() && !empty($filename)) {
@@ -117,7 +142,7 @@ class Cache
             if (!file_exists($filePath)) {
                 return false;
             }
-
+            $this->setOldTime(filemtime($filePath));
             $this->rawData = file_get_contents($filePath);
             return static::$cachedDataArray[$filePath] = $this->data = json_decode($this->rawData);
         }
@@ -190,6 +215,46 @@ class Cache
     public function getOldRawData()
     {
         return $this->oldRawData;
+    }
+
+    /**
+     * @return null
+     */
+    public function getTime()
+    {
+        if ($this->time === null) {
+            return 0;
+        }
+
+        return $this->time;
+
+    }
+
+    /**å
+     * @param null|int $time
+     */
+    protected function setTime($time)
+    {
+        $this->time = $time;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getOldTime()
+    {
+        if ($this->oldTime === null) {
+            return 0;
+        }
+        return $this->oldTime;
+    }
+
+    /**
+     * @param int|null $oldTime
+     */
+    protected function setOldTime($oldTime)
+    {
+        $this->oldTime = $oldTime;
     }
 
 
