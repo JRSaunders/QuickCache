@@ -1,261 +1,260 @@
 <?php
+
 namespace QuickCache;
 /**
  * Class Cache
  * @package QuickCache
  */
-class Cache
-{
-    /**
-     * @var array
-     */
-    protected static $cachedDataArray = array();
-    /**
-     * @var array
-     */
-    protected static $cachePathArray = array();
-    /**
-     * @var null|string
-     */
-    protected $rawData = null;
-    /**
-     * @var null|string
-     */
-    protected $oldRawData = null;
-    /**
-     * @var null|\stdClass
-     */
-    protected $data = null;
-    /**
-     * @var null|int
-     */
-    protected $time = null;
-    /**
-     * @var null|int
-     */
-    protected $oldTime = null;
+class Cache {
+	/**
+	 * @var array
+	 */
+	protected static $cachedDataArray = array();
+	/**
+	 * @var array
+	 */
+	protected static $cachePathArray = array();
+	/**
+	 * @var null|string
+	 */
+	protected $rawData = null;
+	/**
+	 * @var null|string
+	 */
+	protected $oldRawData = null;
+	/**
+	 * @var null|\stdClass
+	 */
+	protected $data = null;
+	/**
+	 * @var null|int
+	 */
+	protected $time = null;
+	/**
+	 * @var null|int
+	 */
+	protected $oldTime = null;
 
-    /**
-     * @return bool|string
-     */
-    public function getCachePath()
-    {
-        $class = get_class($this);
-        if (isset(self::$cachePathArray[$class])) {
-            return rtrim(self::$cachePathArray[$class], '/') . '/';
-        }
-        return false;
-    }
+	/**
+	 * @return bool|string
+	 */
+	public function getCachePath() {
+		$class = get_class( $this );
+		if ( isset( self::$cachePathArray[ $class ] ) ) {
+			return rtrim( self::$cachePathArray[ $class ], '/' ) . '/';
+		}
 
-    /**
-     * @param string $cachePath
-     */
-    public function setCachePath($cachePath)
-    {
-        $class = get_class($this);
-        self::$cachePathArray[$class] = $cachePath;
+		return false;
+	}
 
-        if (!((file_exists($cachePath)) && is_writable($cachePath))) {
-            $madeDir = mkdir($cachePath);
-            if (!$madeDir) {
-                throw new \Exception('Unable to create ' . $cachePath . ' Quick Cache Path!');
-            }
-        }
-    }
+	/**
+	 * @param string $cachePath
+	 */
+	public function setCachePath( $cachePath ) {
+		$class                          = get_class( $this );
+		self::$cachePathArray[ $class ] = $cachePath;
 
-    /**
-     * @param null $filename
-     * @param null $data
-     * @return bool|int
-     */
-    public function saveToCache($filename = null, $data = null)
-    {
-        if ($this->getCachePath() && !empty($filename)) {
-            $filePath = $this->getCachePath() . $this->prepareFilename($filename);
-            $jsonData = json_encode($data);
-            return file_put_contents($filePath, $jsonData);
-        }
+		if ( ! ( ( file_exists( $cachePath ) ) && is_writable( $cachePath ) ) ) {
+			$madeDir = mkdir( $cachePath );
+			if ( ! $madeDir ) {
+				throw new \Exception( 'Unable to create ' . $cachePath . ' Quick Cache Path!' );
+			}
+		}
+	}
 
-        return true;
-    }
+	/**
+	 * @param null $filename
+	 * @param null $data
+	 *
+	 * @return bool|int
+	 */
+	public function saveToCache( $filename = null, $data = null ) {
+		if ( $this->getCachePath() && ! empty( $filename ) ) {
+			$filePath = $this->getCachePath() . $this->prepareFilename( $filename );
+			$jsonData = json_encode( $data );
 
-    /**
-     * @param $filename
-     * @param int $ttlSeconds
-     * @param bool $removeOld
-     * @return bool|mixed
-     */
-    public function getCacheData($filename, $ttlSeconds = 120000, $removeOld = true, $saveOldCache = true)
-    {
-        if ($this->getCachePath() && !empty($filename)) {
-            $filePath = $this->getCachePath() . $this->prepareFilename($filename);
+			return file_put_contents( $filePath, $jsonData );
+		}
 
-            if (isset(static::$cachedDataArray[$filePath])) {
-                return $this->data = static::$cachedDataArray[$filePath];
-            }
+		return true;
+	}
 
-            if (!file_exists($filePath)) {
-                return false;
-            }
-            $this->setTime(filemtime($filePath));
-            if ((time() - $this->getTime()) <= $ttlSeconds) {
-                $this->rawData = file_get_contents($filePath);
-                return static::$cachedDataArray[$filePath] = $this->data = json_decode($this->rawData);
-            }
-            $this->oldRawData = file_get_contents($filePath);
-            if ($saveOldCache) {
-                $this->saveOldCache($filename);
-            }
-            if ($removeOld) {
-                unlink($filePath);
-            }
-        }
-        return false;
-    }
+	/**
+	 * @param $filename
+	 * @param int $ttlSeconds
+	 * @param bool $removeOld
+	 *
+	 * @return bool|mixed
+	 */
+	public function getCacheData( $filename, $ttlSeconds = 120000, $removeOld = true, $saveOldCache = true ) {
+		if ( $this->getCachePath() && ! empty( $filename ) ) {
+			$filePath = $this->getCachePath() . $this->prepareFilename( $filename );
 
-    /**
-     * @param $filename
-     * @param bool $removeOld
-     * @return bool
-     */
-    public function destroyCache($filename, $removeOld = true)
-    {
-        if (!($this->getCachePath() && !empty($filename))) {
-            return false;
-        }
+			if ( isset( static::$cachedDataArray[ $filePath ] ) ) {
+				return $this->data = static::$cachedDataArray[ $filePath ];
+			}
 
-        @unlink($this->getCachePath() . $this->prepareFilename($filename));
-        if ($removeOld) {
-            @unlink($this->getCachePath() . $this->prepareFilename($filename, true));
-        }
-    }
+			if ( ! file_exists( $filePath ) ) {
+				return false;
+			}
+			$this->setTime( filemtime( $filePath ) );
+			if ( ( time() - $this->getTime() ) <= $ttlSeconds ) {
+				$this->rawData = file_get_contents( $filePath );
 
-    public function getOldCacheData($filename)
-    {
-        if ($this->getCachePath() && !empty($filename)) {
-            $filePath = $this->getCachePath() . $this->prepareFilename($filename, true);
+				return static::$cachedDataArray[ $filePath ] = $this->data = json_decode( $this->rawData );
+			}
+			$this->oldRawData = file_get_contents( $filePath );
+			if ( $saveOldCache ) {
+				$this->saveOldCache( $filename );
+			}
+			if ( $removeOld ) {
+				unlink( $filePath );
+			}
+		}
 
-            if (isset(static::$cachedDataArray[$filePath])) {
-                return $this->data = static::$cachedDataArray[$filePath];
-            }
+		return false;
+	}
 
-            if (!file_exists($filePath)) {
-                return false;
-            }
-            $this->setOldTime(filemtime($filePath));
-            $this->rawData = file_get_contents($filePath);
-            return static::$cachedDataArray[$filePath] = $this->data = json_decode($this->rawData);
-        }
-        return false;
-    }
+	/**
+	 * @param $filename
+	 * @param bool $removeOld
+	 *
+	 * @return bool
+	 */
+	public function destroyCache( $filename, $removeOld = true ) {
+		if ( ! ( $this->getCachePath() && ! empty( $filename ) ) ) {
+			return false;
+		}
 
-    protected function saveOldCache($filename)
-    {
-        if ($this->getOldRawData() !== null) {
-            $filePath = $this->getCachePath() . $this->prepareFilename($filename, true);
-            file_put_contents($filePath, $this->getOldRawData());
-        }
-    }
+		@unlink( $this->getCachePath() . $this->prepareFilename( $filename ) );
+		if ( $removeOld ) {
+			@unlink( $this->getCachePath() . $this->prepareFilename( $filename, true ) );
+		}
+	}
 
-    /**
-     * @param $filename
-     * @return string
-     */
-    protected function prepareFilename($filename, $old = false)
-    {
-        $ext = '.QuickCache';
-        if ($old) {
-            $ext = '.OldQuickCache';
-        }
-        $searchArray = array('.QuickCache', '.OldQuickCache');
-        $filename = $this->normalizeString($filename);
-        $filename = str_replace($searchArray, '', $filename);
+	public function getOldCacheData( $filename ) {
+		if ( $this->getCachePath() && ! empty( $filename ) ) {
+			$filePath = $this->getCachePath() . $this->prepareFilename( $filename, true );
 
-        return $filename . $ext;
-    }
+			if ( isset( static::$cachedDataArray[ $filePath ] ) ) {
+				return $this->data = static::$cachedDataArray[ $filePath ];
+			}
 
-    /**
-     * @param string $str
-     * @return mixed|string
-     */
-    public function normalizeString($str = '')
-    {
-        $str = strip_tags($str);
-        $str = preg_replace('/[\r\n\t ]+/', ' ', $str);
-        $str = preg_replace('/[\"\*\/\:\<\>\?\'\|]+/', ' ', $str);
-        $str = strtolower($str);
-        $str = html_entity_decode($str, ENT_QUOTES, "utf-8");
-        $str = htmlentities($str, ENT_QUOTES, "utf-8");
-        $str = preg_replace("/(&)([a-z])([a-z]+;)/i", '$2', $str);
-        $str = str_replace(' ', '-', $str);
-        $str = rawurlencode($str);
-        $str = str_replace('%', '-', $str);
-        return $str;
-    }
+			if ( ! file_exists( $filePath ) ) {
+				return false;
+			}
+			$this->setOldTime( filemtime( $filePath ) );
+			$this->rawData = file_get_contents( $filePath );
 
-    /**
-     * @return string
-     */
-    public function getRawData()
-    {
-        return $this->rawData;
-    }
+			return static::$cachedDataArray[ $filePath ] = $this->data = json_decode( $this->rawData );
+		}
 
-    /**
-     * @return null
-     */
-    public function getData()
-    {
-        return $this->data;
-    }
+		return false;
+	}
 
-    /**
-     * @return null|string
-     */
-    public function getOldRawData()
-    {
-        return $this->oldRawData;
-    }
+	protected function saveOldCache( $filename ) {
+		if ( $this->getOldRawData() !== null ) {
+			$filePath = $this->getCachePath() . $this->prepareFilename( $filename, true );
+			file_put_contents( $filePath, $this->getOldRawData() );
+			touch( $filePath, $this->getTime() );
+		}
+	}
 
-    /**
-     * @return null
-     */
-    public function getTime()
-    {
-        if ($this->time === null) {
-            return 0;
-        }
+	/**
+	 * @param $filename
+	 *
+	 * @return string
+	 */
+	protected function prepareFilename( $filename, $old = false ) {
+		$ext = '.QuickCache';
+		if ( $old ) {
+			$ext = '.OldQuickCache';
+		}
+		$searchArray = array( '.QuickCache', '.OldQuickCache' );
+		$filename    = $this->normalizeString( $filename );
+		$filename    = str_replace( $searchArray, '', $filename );
 
-        return $this->time;
+		return $filename . $ext;
+	}
 
-    }
+	/**
+	 * @param string $str
+	 *
+	 * @return mixed|string
+	 */
+	public function normalizeString( $str = '' ) {
+		$str = strip_tags( $str );
+		$str = preg_replace( '/[\r\n\t ]+/', ' ', $str );
+		$str = preg_replace( '/[\"\*\/\:\<\>\?\'\|]+/', ' ', $str );
+		$str = strtolower( $str );
+		$str = html_entity_decode( $str, ENT_QUOTES, "utf-8" );
+		$str = htmlentities( $str, ENT_QUOTES, "utf-8" );
+		$str = preg_replace( "/(&)([a-z])([a-z]+;)/i", '$2', $str );
+		$str = str_replace( ' ', '-', $str );
+		$str = rawurlencode( $str );
+		$str = str_replace( '%', '-', $str );
 
-    /**å
-     * @param null|int $time
-     */
-    protected function setTime($time)
-    {
-        $this->time = $time;
-    }
+		return $str;
+	}
 
-    /**
-     * @return int|null
-     */
-    public function getOldTime()
-    {
-        if ($this->oldTime === null) {
-            return 0;
-        }
-        return $this->oldTime;
-    }
+	/**
+	 * @return string
+	 */
+	public function getRawData() {
+		return $this->rawData;
+	}
 
-    /**
-     * @param int|null $oldTime
-     */
-    protected function setOldTime($oldTime)
-    {
-        $this->oldTime = $oldTime;
-    }
+	/**
+	 * @return null
+	 */
+	public function getData() {
+		return $this->data;
+	}
+
+	/**
+	 * @return null|string
+	 */
+	public function getOldRawData() {
+		return $this->oldRawData;
+	}
+
+	/**
+	 * @return null
+	 */
+	public function getTime() {
+		if ( $this->time === null ) {
+			return 0;
+		}
+
+		return $this->time;
+
+	}
+
+	/**å
+	 *
+	 * @param null|int $time
+	 */
+	protected function setTime( $time ) {
+		$this->time = $time;
+	}
+
+	/**
+	 * @return int|null
+	 */
+	public function getOldTime() {
+		if ( $this->oldTime === null ) {
+			return 0;
+		}
+
+		return $this->oldTime;
+	}
+
+	/**
+	 * @param int|null $oldTime
+	 */
+	protected function setOldTime( $oldTime ) {
+		$this->oldTime = $oldTime;
+	}
 
 
 }
