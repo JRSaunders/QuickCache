@@ -6,6 +6,10 @@ Quick Caching Library
 [![Latest Unstable Version](https://poser.pugx.org/jrsaunders/quickcache/v/unstable)](https://packagist.org/packages/jrsaunders/quickcache)
 [![License](https://poser.pugx.org/jrsaunders/quickcache/license)](https://packagist.org/packages/jrsaunders/quickcache)
 
+Install via composer
+
+```$composer require jrsaunders/quickcache```
+
 ``` 
 <?php
 
